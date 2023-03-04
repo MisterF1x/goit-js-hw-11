@@ -1,57 +1,72 @@
 import { Notify, Loading } from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
-import { clear, errorMsg, smoothScroll } from './functions';
+import {
+  clear,
+  errorMsg,
+  hideEl,
+  showEl,
+  smoothScroll,
+  hideShowBtn,
+} from './functions';
 import ImgApiService from './fetchAPI';
 import { refs } from './refs';
 import { renderImages } from './createMarkup';
 
-const imgApiService = new ImgApiService();
+export const imgApiService = new ImgApiService();
 let simpleLightbox = new SimpleLightbox('.gallery a', {
   captionDelay: 250,
 });
 
-export const onSubmitSearchInput = e => {
+export const onSubmitSearchInput = async e => {
   e.preventDefault();
   const form = e.currentTarget;
-
   imgApiService.query = e.currentTarget.elements.searchQuery.value.trim();
+  imgApiService.resetPage();
+
   if (imgApiService.query === '') {
     return errorMsg('Please fill in all the fields!');
   }
 
-  imgApiService
-    .fetchImages()
-    .then(({ hits, total }) => {
-      Loading.standard('Loading...');
+  try {
+    const { hits, total, totalHits } = await imgApiService.fetchImages();
 
+    imgApiService.totalImages = totalHits;
+    imgApiService.incrementPage();
+
+    Loading.standard('Loading...');
+    setTimeout(() => {
       if (hits.length === 0) {
-        errorMsg(
+        return errorMsg(
           'Sorry, there are no images matching your search query. Please try again.'
         );
-        return;
       }
       Notify.info(`Hooray! We found ${total} images.`);
+
       clear(refs.gallery);
+
       renderImages(refs.gallery, hits);
       simpleLightbox.refresh();
-    })
-    .catch(errorMsg)
-    .finally(() => {
-      refs.loadBtn.classList.remove('hidden');
+      hideShowBtn(hits);
       Loading.remove();
       form.reset();
-    });
+    }, 1000);
+  } catch (errorMsg) {}
 };
 
-export const onLoadMore = () => {
-  setTimeout(() => {
-    imgApiService
-      .fetchImages()
-      .then(({ hits }) => {
-        renderImages(refs.gallery, hits);
-        simpleLightbox.refresh();
-        smoothScroll(refs.gallery);
-      })
-      .finally(() => {});
-  }, 1000);
+export const onLoadMore = async () => {
+  hideEl(refs.loadBtn);
+  showEl(refs.loader);
+
+  try {
+    const { hits } = await imgApiService.fetchImages();
+    setTimeout(() => {
+      renderImages(refs.gallery, hits);
+
+      simpleLightbox.refresh();
+      smoothScroll(refs.gallery);
+      imgApiService.incrementPage();
+      hideShowBtn(hits);
+      hideEl(refs.loader);
+    }, 1000);
+  } catch (errorMsg) {}
 };
