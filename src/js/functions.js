@@ -24,13 +24,11 @@ export const smoothScroll = el => {
   });
 };
 
-export const hideShowBtn = hits => {
+export const notification = hits => {
   if (!imgApiService.hasPages || hits.length < imgApiService.perPage) {
     hideEl(refs.loadBtn);
     Notify.warning(
       "We're sorry, but you've reached the end of search results."
     );
-  } else {
-    showEl(refs.loadBtn);
   }
 };

@@ -156,24 +156,30 @@ body {
   .info-item {
     font-size: 12px;
   }
-  .gallery {
-    margin: -8px;
-  }
+
   .gallery > a {
-    margin: 8px;
-    width: calc((100% - 48px) / 3);
+    margin: 4px;
+    width: calc((100% - 24px) / 3);
   }
 }
 
 @media screen and (max-width: 700px) {
+  .gallery {
+    padding: 15px 0;
+  }
   .gallery > a {
-    width: calc((100% - 32px) / 2);
+    width: calc((100% - 16px) / 2);
   }
 }
 
 @media screen and (max-width: 450px) {
   .info-item {
     font-size: 9px;
+  }
+
+  .gallery > a {
+    margin: 2px;
+    width: calc((100% - 8px) / 2);
   }
 }
 

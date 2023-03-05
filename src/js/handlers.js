@@ -6,7 +6,7 @@ import {
   hideEl,
   showEl,
   smoothScroll,
-  hideShowBtn,
+  notification,
 } from './functions';
 import ImgApiService from './fetchAPI';
 import { refs } from './refs';
@@ -31,25 +31,30 @@ export const onSubmitSearchInput = async e => {
     const { hits, total, totalHits } = await imgApiService.fetchImages();
 
     if (hits.length === 0) {
-      return errorMsg(
+      errorMsg(
         'Sorry, there are no images matching your search query. Please try again.'
       );
+      clear(refs.gallery);
+      hideEl(refs.loadBtn);
+      form.reset();
+      return;
     }
     imgApiService.totalImages = totalHits;
     imgApiService.incrementPage();
 
     Loading.standard('Loading...');
-    setTimeout(() => {
-      Notify.info(`Hooray! We found ${total} images.`);
 
-      clear(refs.gallery);
+    Notify.info(`Hooray! We found ${total} images.`);
 
-      renderImages(refs.gallery, hits);
-      simpleLightbox.refresh();
-      hideShowBtn(hits);
-      Loading.remove();
-      form.reset();
-    }, 1000);
+    clear(refs.gallery);
+    renderImages(refs.gallery, hits);
+
+    simpleLightbox.refresh();
+
+    showEl(refs.loadBtn);
+    notification(hits);
+    form.reset();
+    Loading.remove();
   } catch (errorMsg) {}
 };
 
@@ -59,14 +64,16 @@ export const onLoadMore = async () => {
 
   try {
     const { hits } = await imgApiService.fetchImages();
+    imgApiService.incrementPage();
+
     setTimeout(() => {
       renderImages(refs.gallery, hits);
-
-      simpleLightbox.refresh();
       smoothScroll(refs.gallery);
-      imgApiService.incrementPage();
-      hideShowBtn(hits);
+      simpleLightbox.refresh();
+
       hideEl(refs.loader);
+      showEl(refs.loadBtn);
+      notification(hits);
     }, 1000);
   } catch (errorMsg) {}
 };
