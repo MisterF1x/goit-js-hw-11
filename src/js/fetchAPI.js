@@ -36,9 +36,6 @@ export default class ImgApiService {
   set query(newQuery) {
     this.searchQuery = newQuery;
   }
-  setTotal(total) {
-    this.totalPages = total;
-  }
   hasPages() {
     return this.page < Math.ceil(this.totalImages / this.perPage);
   }
